@@ -44,6 +44,7 @@ let hard_coded_responses = [
 
 /* GET users listing. */
 router.post('/handle', async function (req, res, next) {
+  await client.connect();
   console.log(req.body);
   //   GPT3 API
   // const configuration = new Configuration({
