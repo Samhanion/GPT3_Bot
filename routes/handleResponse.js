@@ -39,6 +39,15 @@ let hard_coded_responses = [
 `,
   `Awesome! Based on this information you qualify for having us file for your ERC. You will be receiving a call in the next 24 hours to finalize 👍🏼`,
 ];
+const connectToRedis = async () => {
+  if (client.connected) {
+    console.log('connected to redis');
+  } else {
+    console.log('not connected to redis');
+    await client.connect();
+    console.log('connected to redis now!');
+  }
+};
 
 /* GET users listing. */
 router.post('/handle', async function (req, res, next) {
@@ -61,11 +70,15 @@ router.post('/handle', async function (req, res, next) {
 
   //   if we got a message from the client
   if (req.body.status == 'RECEIVED') {
-    if (client.connected) {
-      console.log('connected to redis');
-    } else {
-      console.log('not connected to redis');
-      await client.connect();
+    try {
+      await client.get('AI message', async (err, value) => {
+        if (err) {
+          connectToRedis();
+        }
+        console.log(value);
+      });
+    } catch (err) {
+      connectToRedis();
     }
     console.log(req.body);
     let imessage_config = {
@@ -113,7 +126,6 @@ router.post('/handle', async function (req, res, next) {
         await client.set('AI message', imessage_config.content);
         console.log(response.data);
         // await client.quit();
-        await client.end();
       })
       .catch((error) => {
         console.error(error);

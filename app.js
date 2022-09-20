@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var handleResponseRouter = require('./routes/handleResponse');
 var redisTestRouter = require('./routes/redisTest');
+const redis = require('redis');
 
 var app = express();
 
