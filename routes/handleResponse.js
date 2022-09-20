@@ -103,17 +103,19 @@ router.post('/handle', async function (req, res, next) {
           'content-type': 'application/json',
         },
       })
-      .then((response) => {
+      .then(async (response) => {
         // save the message to redis
-        client.set('AI message', imessage_config.content);
+        await client.set('AI message', imessage_config.content);
         console.log(response.data);
+        await client.quit();
       })
       .catch((error) => {
         console.error(error);
       });
   }
-  await client.quit();
+
   res.send('done!');
+  //   await client.quit();
 });
 
 module.exports = router;
