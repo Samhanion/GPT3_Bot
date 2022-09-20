@@ -12,6 +12,7 @@ const client = redis.createClient({
   url,
   password: process.env.REDIS_PASSWORD,
 });
+client.connect();
 
 let hard_coded_responses = [
   `Great; I’m actually a fully automated helper bot for ERC filings set up by HBL CPA’s.
@@ -20,11 +21,9 @@ let hard_coded_responses = [
     
     To continue there’s only 5 simple qualifying questions I have you can just text me back answers too. Alternatively you can apply through our form at ApplyForERC.org, and if you have  questions feel free to call us at +15208700996. 
     
-    First off how many W2 employees did you have on average in 2020? (If any) 
-    `,
+    First off how many W2 employees did you have on average in 2020? (If any)`,
   `How many W2 employees did you have on average in 2021? (If any)`,
   `Did you start your business before Feb 15th 2020 or after?`,
-  `Did you start your business before Feb 15th 2020 or after? `,
   `Did experience a Covid 19 event that negatively affect your business in 2020 or 2021?
     This includes:
 - Revenue reduction in any quarters of 2020 and/or 2021, compared to the same quarter in 2019
@@ -44,7 +43,6 @@ let hard_coded_responses = [
 
 /* GET users listing. */
 router.post('/handle', async function (req, res, next) {
-  await client.connect();
   console.log(req.body);
   //   GPT3 API
   // const configuration = new Configuration({
@@ -65,48 +63,49 @@ router.post('/handle', async function (req, res, next) {
 
   //   if we got a message from the client
   if (req.body.status == 'RECEIVED') {
-    let messageToClient;
+    let imessage_config = {
+      number: '+15208700996',
+      content: '',
+      // send_style: 'fireworks'
+      //   media_url: 'https://source.unsplash.com/random.png',
+      statusCallback: 'http://imessagebot-env-1.eba-452iz3ee.us-east-1.elasticbeanstalk.com/handle',
+    };
 
     //   save the message to redis
     await client.set('Client message', req.body.content);
     if (req.body.content == 'restart bot') {
       await client.flushAll();
-      messageToClient = 'Hey, Have you heard about ERC?';
+      imessage_config.content = 'Hey, Have you heard about ERC?';
     }
 
     //   get the previous AI message
     var previousMessage = await client.get('AI message');
     if (!previousMessage) previousMessage = '';
-    if (previousMessage == '' && req.body.content != 'restart bot') messageToClient = hard_coded_responses[0];
-    if (previousMessage.includes('how many W2 employees did you have on average in 2020')) messageToClient = hard_coded_responses[1];
-    if (previousMessage.includes('how many W2 employees did you have on average in 2021')) messageToClient = hard_coded_responses[2];
-    if (previousMessage.includes('did you start your business before Feb 15th 2020 or after')) messageToClient = hard_coded_responses[3];
-    if (previousMessage.includes('did experience a Covid 19 event that negatively affect your business in 2020 or 2021'))
-      messageToClient = hard_coded_responses[4];
-    if (previousMessage.includes('based on this information you qualify for having us file for your ERC')) return req.send('done');
-
-    axios
-      .post(
-        'https://api.sendblue.co/api/send-message',
-        {
-          number: '+15208700996',
-          content: messageToClient,
-          send_style: 'fireworks',
-          //   media_url: 'https://source.unsplash.com/random.png',
-          send_style: 'fireworks',
-          statusCallback: 'http://imessagebot-env-1.eba-452iz3ee.us-east-1.elasticbeanstalk.com/handle',
-        },
-        {
-          headers: {
-            'sb-api-key-id': '99b1ab1984188ec4bd9f107d8e786b87',
-            'sb-api-secret-key': '4c728b16d63f24ded5342744d63b06c2',
-            'content-type': 'application/json',
-          },
-        },
+    if (previousMessage == '' && req.body.content != 'restart bot') imessage_config.content = hard_coded_responses[0];
+    if (previousMessage.includes(hard_coded_responses[0])) imessage_config.content = hard_coded_responses[1];
+    if (previousMessage.includes(hard_coded_responses[1])) imessage_config.content = hard_coded_responses[2];
+    if (previousMessage.includes(hard_coded_responses[2])) imessage_config.content = hard_coded_responses[3];
+    if (previousMessage.includes(hard_coded_responses[3]))
+      (imessage_config.content = hard_coded_responses[4]), (imessage_config.send_style = 'fireworks');
+    if (
+      previousMessage.includes(
+        'Awesome! Based on this information you qualify for having us file for your ERC. You will be receiving a call in the next 24 hours to finalize 👍🏼',
       )
+    )
+      return req.send('done');
+
+    // console.log('imessage_config', imessage_config);
+    axios
+      .post('https://api.sendblue.co/api/send-message', imessage_config, {
+        headers: {
+          'sb-api-key-id': '99b1ab1984188ec4bd9f107d8e786b87',
+          'sb-api-secret-key': '4c728b16d63f24ded5342744d63b06c2',
+          'content-type': 'application/json',
+        },
+      })
       .then((response) => {
         // save the message to redis
-        client.set('AI message', messageToClient);
+        client.set('AI message', imessage_config.content);
         console.log(response.data);
       })
       .catch((error) => {
