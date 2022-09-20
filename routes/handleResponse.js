@@ -113,6 +113,7 @@ router.post('/handle', async function (req, res, next) {
         await client.set('AI message', imessage_config.content);
         console.log(response.data);
         // await client.quit();
+        await client.end();
       })
       .catch((error) => {
         console.error(error);
