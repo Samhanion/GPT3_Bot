@@ -12,7 +12,6 @@ const client = redis.createClient({
   url,
   password: process.env.REDIS_PASSWORD,
 });
-client.connect();
 
 let hard_coded_responses = [
   `Great; I’m actually a fully automated helper bot for ERC filings set up by HBL CPA’s.
@@ -43,6 +42,7 @@ let hard_coded_responses = [
 
 /* GET users listing. */
 router.post('/handle', async function (req, res, next) {
+  await client.connect();
   console.log(req.body);
   //   GPT3 API
   // const configuration = new Configuration({
@@ -112,7 +112,7 @@ router.post('/handle', async function (req, res, next) {
         console.error(error);
       });
   }
-
+  await client.quit();
   res.send('done!');
 });
 
