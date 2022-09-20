@@ -42,13 +42,6 @@ let hard_coded_responses = [
 
 /* GET users listing. */
 router.post('/handle', async function (req, res, next) {
-  if (client.connected) {
-    console.log('connected to redis');
-  } else {
-    console.log('not connected to redis');
-    await client.connect();
-  }
-  console.log(req.body);
   //   GPT3 API
   // const configuration = new Configuration({
   // apiKey: process.env.OPENAI_API_KEY,
@@ -68,6 +61,13 @@ router.post('/handle', async function (req, res, next) {
 
   //   if we got a message from the client
   if (req.body.status == 'RECEIVED') {
+    if (client.connected) {
+      console.log('connected to redis');
+    } else {
+      console.log('not connected to redis');
+      await client.connect();
+    }
+    console.log(req.body);
     let imessage_config = {
       number: '+15208700996',
       content: '',
