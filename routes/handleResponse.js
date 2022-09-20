@@ -68,8 +68,8 @@ router.post('/handle', async function (req, res, next) {
     let messageToClient;
 
     //   save the message to redis
-    await client.set('Client message', req.body.message);
-    if (req.body.message == 'restart bot') {
+    await client.set('Client message', req.body.content);
+    if (req.body.content == 'restart bot') {
       await client.flushAll();
       messageToClient = 'Hey, Have you heard about ERC?';
     }
@@ -77,7 +77,7 @@ router.post('/handle', async function (req, res, next) {
     //   get the previous AI message
     var previousMessage = await client.get('AI message');
     if (!previousMessage) previousMessage = '';
-    if (previousMessage == '' && req.body.message != 'restart bot') messageToClient = hard_coded_responses[0];
+    if (previousMessage == '' && req.body.content != 'restart bot') messageToClient = hard_coded_responses[0];
     if (previousMessage.includes('how many W2 employees did you have on average in 2020')) messageToClient = hard_coded_responses[1];
     if (previousMessage.includes('how many W2 employees did you have on average in 2021')) messageToClient = hard_coded_responses[2];
     if (previousMessage.includes('did you start your business before Feb 15th 2020 or after')) messageToClient = hard_coded_responses[3];
@@ -93,6 +93,7 @@ router.post('/handle', async function (req, res, next) {
           content: messageToClient,
           send_style: 'fireworks',
           //   media_url: 'https://source.unsplash.com/random.png',
+          send_style: 'fireworks',
           statusCallback: 'http://imessagebot-env-1.eba-452iz3ee.us-east-1.elasticbeanstalk.com/handle',
         },
         {
