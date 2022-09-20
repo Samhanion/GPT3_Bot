@@ -42,7 +42,12 @@ let hard_coded_responses = [
 
 /* GET users listing. */
 router.post('/handle', async function (req, res, next) {
-  await client.connect();
+  if (client.connected) {
+    console.log('connected to redis');
+  } else {
+    console.log('not connected to redis');
+    await client.connect();
+  }
   console.log(req.body);
   //   GPT3 API
   // const configuration = new Configuration({
@@ -107,7 +112,7 @@ router.post('/handle', async function (req, res, next) {
         // save the message to redis
         await client.set('AI message', imessage_config.content);
         console.log(response.data);
-        await client.quit();
+        // await client.quit();
       })
       .catch((error) => {
         console.error(error);
