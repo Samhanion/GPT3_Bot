@@ -6,15 +6,6 @@ const redis = require('redis');
 const conversation = require('../models/conversation');
 const { create } = require('../models/conversation');
 
-// const { MongoClient, ServerApiVersion } = require('mongodb');
-// const uri = "mongodb+srv://1234:1234@cluster0.by0sy.mongodb.net/?retryWrites=true&w=majority";
-// const mongoClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-// client.connect(err => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const url = `redis://${process.env.REDIS_URL}:${process.env.REDIS_PORT}`;
