@@ -68,6 +68,7 @@ const handleResponseController = async (req, res, next) => {
 
     console.log(req.body);
     let imessage_config = {
+      // TODO : change to the number you got back from the req
       number: '+15208700996',
       content: '',
       // send_style: 'fireworks'
@@ -127,14 +128,15 @@ const handleResponseController = async (req, res, next) => {
   } else {
     // checking if the number is in the database
     const number = req.body.number;
-    const conversation = await conversation.findOne({ number: number });
+    let conv = await conversation.findOne({ client: number });
     // if the result is not empty, the number is in the database
-    if (conversation != {}) {
+    if (conv != null) {
       // we update the bot responses
       let client = req.body.number;
       let client_message = '';
       let bot_message = req.body.content;
       update(client, client_message, bot_message);
+      console.log('updated');
     }
     // the result is empty, the number is not in the database
     else {
@@ -143,6 +145,7 @@ const handleResponseController = async (req, res, next) => {
       let client_message = '';
       let bot_message = req.body.content;
       createConv(client, client_message, bot_message);
+      console.log('conversation created');
     }
   }
 
